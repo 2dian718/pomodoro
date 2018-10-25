@@ -1,3 +1,4 @@
+# coding: utf-8
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
@@ -27,6 +28,10 @@ gem 'bootsnap', '>= 1.1.0', require: false
 
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
 # gem 'rack-cors'
+
+# 🎉 Makes http fun again!
+# https://github.com/jnunemaker/httparty
+gem 'httparty', '~> 0.16.1'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
