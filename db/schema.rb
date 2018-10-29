@@ -18,4 +18,17 @@ ActiveRecord::Schema.define(version: 2018_10_25_093706) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "pomodoros", force: :cascade do |t|
+    t.string "name"
+    t.string "vchannel_id"
+    t.string "sender"
+    t.datetime "ended_at"
+    t.integer "state", default: 0
+    t.string "app_type"
+    t.integer "app_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["app_type", "app_id"], name: "index_pomodoros_on_app_type_and_app_id"
+  end
+
 end
