@@ -1,48 +1,83 @@
+# coding: utf-8
 require "beary_chat_client"
 
 class PomodoroApp < ApplicationRecord
   has_many :pomodoros, as: :app, dependent: :destroy
 
-  def reply(message)
-    message_content = JSON.parse(message[:text])
+  def receive(message)
+    text = (message[:text] || "").split.first
 
-    return nil if message_content["path"] != "pomodoros"
-
-    case message_content["method"]
-    when "POST"
-      create_pomodoro(message)
-    when "PATCH"
-      update_pomodoro(message)
-    when "GET"
-      find_pomodoros(message)
+    case text
+    when "start"
+      start(message)
+    when "stop"
+      stop(message)
+    when "finish"
+      finish(message)
+    when "summary"
+      summary(message)
+    else
+      # TODO: give help or ls
+      nil
     end
   end
 
-  def create_pomodoro(message)
-    pomodoro = pomodoros.create(vchannel_id: message["vchannel"])
-    text     = present_pomodoro(pomodoro).to_json
+  def start(message)
+    pomodoro = pomodoros.create(vchannel_id: message["vchannel"],
+                                sender: message[:sender])
+
+    pomodoro.finish_pomodoro_notify
+
+    create_message(message["vchannel"], "gify clock")
+
+    text     = "开始计时！"
+    create_message(message["vchannel"], text)
+  end
+
+  def stop(message)
+    pomodoro = Pomodoro.started.find_by_sender message[:sender]
+
+    text = if pomodoro
+             # TODO: add time consuming
+             pomodoro.droped!
+
+             "已丢弃一个番茄。"
+           else
+             "没有进行中的番茄，使用 start 开始一个番茄吧！"
+           end
 
     create_message(message["vchannel"], text)
   end
 
-  def update_pomodoro(message)
-    content  = JSON.parse(message[:text])
-    pomodoro = Pomodoro.find content["data"]["id"]
-    params   = content["data"].slice("name", "state")
-    pomodoro.update(params)
-    text     = present_pomodoro(pomodoro).to_json
+  def finish(message)
+    pomodoro = Pomodoro.started.find_by_sender message[:sender]
 
-    create_message(message["vchannel"], text)
+    if pomodoro
+      pomodoro.ended!
+      create_message(message["vchannel"], "gify cheer")
+
+      create_message(message["vchannel"], "恭喜你，完成一个番茄！")
+    else
+      create_message(message["vchannel"], "没有进行中的番茄，使用 start 开始一个番茄吧！")
+    end
   end
 
-  def find_pomodoros(message)
-    content     = JSON.parse(message[:text])
-    vchannel_id = message["vchannel"]
-    pomodoros   = Pomodoro.where(vchannel_id: vchannel_id)
-    pomodoros   = pomodoros.today if content["data"]["today"]
-    text        = pomodoros.map { |pomodoro| present_pomodoro(pomodoro) }.to_json
+  def summary(message)
+    pomodoros       = Pomodoro.where(sender: message[:sender]).today
+    pomodoros_count = pomodoros.count
 
-    create_message(message["vchannel"], text)
+    create_message(message["vchannel"], "今天已经完成了 #{pomodoros_count} 个番茄")
+    create_message(message["vchannel"], "gify awesome")
+  end
+
+  def create_message(vchannel_id, text)
+    body = {
+      text: text,
+      vchannel_id: vchannel_id,
+      attachments: []
+    }
+
+    client.create_message(body)
   end
 
   def create_message(vchannel_id, text)
@@ -56,11 +91,7 @@ class PomodoroApp < ApplicationRecord
   end
 
   private
-  def present_pomodoro(pomodoro)
-    pomodoro.slice(:id, :name, :state, :created_at, :ended_at, :vchannel_id)
-  end
-
   def client
-    @client ||= BearyChatClient.new(token, id: meta[:id], base_url: "https://api.bearychat.com/v1")
+    @client ||= BearyChatClient.new(token, base_url: "https://api.bearychat.com/v1")
   end
 end

@@ -3,6 +3,7 @@ require "timers"
 
 class Pomodoro < ActiveRecord::Base
   POMODORO_INTERVAL_SECONDS = 5 * 60
+  POMODORO_SECONDS = 25 * 60
 
   belongs_to :app, polymorphic: true
 
@@ -25,12 +26,22 @@ class Pomodoro < ActiveRecord::Base
 
   def ended!
     update state: :ended, ended_at: Time.now
-    start_a_pomodoro_notify
+    start_pomodoro_notify
   end
 
-  def start_a_pomodoro_notify
+  def start_pomodoro_notify
     self.class.timer.after(POMODORO_INTERVAL_SECONDS) do
-      text = "已经休息了 #{POMODORO_INTERVAL_SECONDS/60} 分钟，请开始一个新的番茄吧！"
+      text = "已经休息了 #{(POMODORO_INTERVAL_SECONDS/60).to_i} 分钟，请开始一个新的番茄吧！"
+
+      pomodoro_app.create_message(vchannel_id, text)
+    end
+  end
+
+  def finish_pomodoro_notify
+    self.class.timer.after(POMODORO_SECONDS) do
+      pomodoro_app.create_message(vchannel_id, "休息一下吧")
+
+      text = "已经工作了 #{(POMODORO_SECONDS/60).to_i} 分钟，如果番茄已完成，请发送 finish"
 
       pomodoro_app.create_message(vchannel_id, text)
     end
