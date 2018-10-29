@@ -2,8 +2,8 @@
 require "timers"
 
 class Pomodoro < ActiveRecord::Base
-  POMODORO_INTERVAL_SECONDS = 5 * 60
-  POMODORO_SECONDS = 25 * 60
+  POMODORO_INTERVAL_SECONDS = 1 * 60
+  POMODORO_SECONDS = 5 ^ 60
 
   belongs_to :app, polymorphic: true
 
