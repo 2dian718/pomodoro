@@ -33,7 +33,7 @@ class Pomodoro < ActiveRecord::Base
     self.class.timer.after(self.id, POMODORO_INTERVAL_SECONDS) do
       text = "已经休息了 #{(POMODORO_INTERVAL_SECONDS/60).to_i} 分钟，请开始一个新的番茄吧！"
 
-      pomodoro_app.create_message(vchannel_id, text)
+      pomodoro_app.create_message_with_image(vchannel_id, text, Giphy.random("now").image_url)
     end
   end
 
@@ -41,7 +41,7 @@ class Pomodoro < ActiveRecord::Base
     self.class.timer.after(self.id, POMODORO_SECONDS) do
       text = "已经工作了 #{(POMODORO_SECONDS/60).to_i} 分钟，如果番茄已完成，请发送 finish"
 
-      pomodoro_app.create_message(vchannel_id, text)
+      pomodoro_app.create_message_with_image(vchannel_id, text, Giphy.random("happy").image_url)
     end
   end
 

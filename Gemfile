@@ -33,6 +33,8 @@ gem 'bootsnap', '>= 1.1.0', require: false
 # https://github.com/jnunemaker/httparty
 gem 'httparty', '~> 0.16.1'
 
+gem 'giphy'
+
 # Pure Ruby timers collections suitable for use with event loops
 # https://github.com/socketry/timers
 gem 'timers', '~> 4.1.2', require: false

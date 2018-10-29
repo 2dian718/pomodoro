@@ -35,10 +35,8 @@ class PomodoroApp < ApplicationRecord
 
     pomodoro.finish_pomodoro_notify
 
-    create_message(message["vchannel"], "gify clock")
-
     text     = "开始计时！"
-    create_message(message["vchannel"], text)
+    create_message_with_image(message["vchannel"], text, Giphy.random("clock").image_url)
   end
 
   def stop(message)
@@ -61,9 +59,8 @@ class PomodoroApp < ApplicationRecord
 
     if pomodoro
       pomodoro.ended!
-      create_message(message["vchannel"], "gify cheer")
 
-      create_message(message["vchannel"], "恭喜你，完成一个番茄！")
+      create_message_with_image(message["vchannel"], "恭喜你，完成一个番茄！", Giphy.random("cheer"))
     else
       create_message(message["vchannel"], "没有进行中的番茄，使用 start 开始一个番茄吧！")
     end
@@ -73,8 +70,7 @@ class PomodoroApp < ApplicationRecord
     pomodoros       = Pomodoro.where(sender: message[:sender]).today
     pomodoros_count = pomodoros.count
 
-    create_message(message["vchannel"], "今天已经完成了 #{pomodoros_count} 个番茄")
-    create_message(message["vchannel"], "gify awesome")
+    create_message_with_image(message["vchannel"], "今天已经完成了 #{pomodoros_count} 个番茄", Giphy.random("awesome"))
   end
 
   def create_message(vchannel_id, text)
@@ -87,12 +83,16 @@ class PomodoroApp < ApplicationRecord
     client.create_message(body)
   end
 
-  def create_message(vchannel_id, text)
+  def create_message_with_image(vchannel_id, text, image)
     body = {
       text: text,
       vchannel_id: vchannel_id,
-      attachments: []
-    }
+      attachments: [
+        {
+          images: [
+            { url: image }
+          ]
+        }]}
 
     client.create_message(body)
   end
