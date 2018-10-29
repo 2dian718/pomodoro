@@ -16,10 +16,17 @@ class PomodoroApp < ApplicationRecord
       finish(message)
     when "summary"
       summary(message)
+    when "help"
+      help(message)
     else
-      # TODO: give help or ls
-      nil
+      help(message)
     end
+  end
+
+  def help(message)
+    text = "番茄工作法是简单易行的时间管理方法，是由弗朗西斯科•西里洛于1992年创立的一种相对于GTD更微观的时间管理方法。使用番茄工作法，选择一个待完成的任务，将番茄时间设为25分钟，专注工作，中途不允许做任何与该任务无关的事，直到番茄时钟响起，然后在纸上画一个X短暂休息一下（5分钟就行）。\n如果需要开始一个番茄，请输入 start。\n如果完成了一个番茄，请输入 finish。\n如果终止一个番茄，请输入 stop。\n如果想知道今天完成了多少番茄，请输入 summary。\n"
+
+    create_message(message["vchannel"], text)
   end
 
   def start(message)
