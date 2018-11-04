@@ -35,7 +35,7 @@ class PomodoroApp < ApplicationRecord
 
     pomodoro.finish_pomodoro_notify
 
-    text     = "开始计时！"
+    text     = "@<=#{message[:sender]}=> 计时开始，开始完成一个番茄吧！"
     create_message_with_image(message["vchannel"], text, Giphy.random("clock").image_url)
   end
 
@@ -46,9 +46,9 @@ class PomodoroApp < ApplicationRecord
              # TODO: add time consuming
              pomodoro.droped!
 
-             "已丢弃一个番茄。"
+             "@<=#{message[:sender]}=> 番茄已丢弃。"
            else
-             "没有进行中的番茄，使用 start 开始一个番茄吧！"
+             "@<=#{message[:sender]}=> 没有进行中的番茄，使用 start 开始一个番茄吧！"
            end
 
     create_message(message["vchannel"], text)
@@ -60,9 +60,9 @@ class PomodoroApp < ApplicationRecord
     if pomodoro
       pomodoro.ended!
 
-      create_message_with_image(message["vchannel"], "恭喜你，完成一个番茄！", Giphy.random("cheer").image_url)
+      create_message_with_image(message["vchannel"], "恭喜 @<=#{message[:sender]}=>，完成一个番茄！", Giphy.random("cheer").image_url)
     else
-      create_message(message["vchannel"], "没有进行中的番茄，使用 start 开始一个番茄吧！")
+      create_message(message["vchannel"], "@<=#{message[:sender]}=>没有进行中的番茄，使用 start 开始一个番茄吧！")
     end
   end
 
@@ -70,7 +70,7 @@ class PomodoroApp < ApplicationRecord
     pomodoros       = Pomodoro.where(sender: message[:sender]).today
     pomodoros_count = pomodoros.count
 
-    create_message_with_image(message["vchannel"], "今天已经完成了 #{pomodoros_count} 个番茄", Giphy.random("awesome").image_url)
+    create_message_with_image(message["vchannel"], "@<=#{message[:sender]}=> 你今天已经完成了 #{pomodoros_count} 个番茄", Giphy.random("awesome").image_url)
   end
 
   def create_message(vchannel_id, text)
